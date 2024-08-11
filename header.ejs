@@ -1,0 +1,20 @@
+<head>
+    <link rel="stylesheet" href="/css/new.css">
+</head>
+<header>
+    <a href="/" id="logo">LibApp</a>
+    <nav>
+        <a href="/patients">Authors</a>
+        <a href="/therapist">Books</a>
+
+        <% if (locals.user){%>
+            <a href="/profile"><%=locals.user.FullName.split(" ")[0]%></a>
+            <a href="/logout">Logout</a>
+            <% }else{%>
+                <a href="/signin">Sign In</a>
+                <a href="/signup">Sign Up</a>
+            <%} %>    
+       
+        
+    </nav>
+</header>
