@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="/styles.css">
+
+</head>
+<body>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+header {
+    background-color: #005b96;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+header .logo img {
+    max-width: 150px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.hero-section {
+    background-color: #0096d1;
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.cta-button {
+    background-color: #ff6f61;
+    color: white;
+    padding: 15px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.about-section, .services-section, .team-section, .contact-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.service, .team-member {
+    margin: 20px 0;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+}
+
+    </style>
+    <header>
+        <div class="logo">
+            <img src="/images/logo.png" alt="Clinic Logo">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/home">Home</a></li>
+                <li><a href="/signin">Signin</a></li>
+                <li><a href="/services">Services</a></li>
+                <li><a href="/team">Our Team</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home" class="hero-section">
+        <h1>Welcome to Our Occupational Therapy Clinic</h1>
+        <p>Helping you live your best life through personalized therapy.</p>
+        <a href="/services" class="cta-button">Explore Our Services</a>
+    </section>
+
+    <section id="about" class="about-section">
+        <h2>About Us</h2>
+        <p>We are dedicated to improving the lives of our patients through expert therapy and personalized care plans.</p>
+    </section>
+
+    <section id="services" class="services-section">
+        <h2>Our Services</h2>
+        <div class="service">
+            <h3>Pediatric Therapy</h3>
+            <p>Specialized therapy for children to help them develop essential skills.</p>
+        </div>
+        <div class="service">
+            <h3>Geriatric Therapy</h3>
+            <p>Helping seniors maintain their independence and improve quality of life.</p>
+        </div>
+        <div class="service">
+            <h3>Hand Therapy</h3>
+            <p>Targeted therapy for hand injuries and conditions.</p>
+        </div>
+    </section>
+
+    <section id="team" class="team-section">
+        <h2>Meet Our Team</h2>
+        <div class="team-member">
+            <img src="/images/therapist1.jpg" alt="Therapist 1">
+            <h3>Jane Doe, OTR/L</h3>
+            <p>Jane specializes in pediatric therapy with over 10 years of experience.</p>
+        </div>
+        <div class="team-member">
+            <img src="/images/therapist2.jpg" alt="Therapist 2">
+            <h3>John Smith, OTR/L</h3>
+            <p>John is an expert in geriatric therapy and hand rehabilitation.</p>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <h2>Contact Us</h2>
+        <p>We'd love to hear from you! Reach out to us with any questions or to schedule an appointment.</p>
+        <form action="#" method="POST">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <label for="message">Message</label>
+            <textarea id="message" name="message" required></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Occupational Therapy Clinic. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
