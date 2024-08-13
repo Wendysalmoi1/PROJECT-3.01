@@ -112,7 +112,82 @@ app.get('/signin', (req, res) => {
     res.render('signin');
 });
 
+app.get('/therapists', (req, res) => {
+    // Fetch therapists from the database or perform any action you want
+    res.send('List of therapists');
+});
 
+
+app.get('/therapist/:id', async (req, res) => {
+    const therapistId = req.params.id;
+
+    try {
+        const result = await pool.query('SELECT * FROM therapists WHERE id = $1', [therapistId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).send('Therapist not found');
+        }
+
+        const therapist = result.rows[0];
+        res.render('therapist-profile', { therapist });
+    } catch (error) {
+        console.error('Error retrieving therapist profile:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to update a therapist's profile
+app.post('/therapist/:id/update', async (req, res) => {
+    const therapistId = req.params.id;
+    const { name, specialization, email, bio } = req.body;
+
+    try {
+        await pool.query(
+            'UPDATE therapists SET name = $1, specialization = $2, email = $3, bio = $4 WHERE id = $5',
+            [name, specialization, email, bio, therapistId]
+        );
+        res.redirect(`/therapist/${therapistId}`);
+    } catch (error) {
+        console.error('Error updating therapist profile:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to view a patient's profile
+app.get('/patient/:id', async (req, res) => {
+    const patientId = req.params.id;
+
+    try {
+        const result = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).send('Patient not found');
+        }
+
+        const patient = result.rows[0];
+        res.render('patient-profile', { patient });
+    } catch (error) {
+        console.error('Error retrieving patient profile:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Route to update a patient's profile
+app.post('/patient/:id/update', async (req, res) => {
+    const patientId = req.params.id;
+    const { name, date_of_birth, medical_history, email } = req.body;
+
+    try {
+        await pool.query(
+            'UPDATE patients SET name = $1, date_of_birth = $2, medical_history = $3, email = $4 WHERE id = $5',
+            [name, date_of_birth, medical_history, email, patientId]
+        );
+        res.redirect(`/patient/${patientId}`);
+    } catch (error) {
+        console.error('Error updating patient profile:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
 
 
 
