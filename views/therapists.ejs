@@ -9,7 +9,42 @@
 <body>
     <div class="container">
         <h1>Therapist Profile</h1>
-        
+        <h1>Available Therapists</h1>
+        <div id="therapists-list"></div>
+    
+        <script>
+            // Fetch the list of therapists from the server
+            fetch('http://localhost:3000/therapists')
+                .then(response => response.json())
+                .then(data => {
+                    const therapistsList = document.getElementById('therapists-list');
+                    
+                    // Clear existing content
+                    therapistsList.innerHTML = '';
+    
+                    // Check if data is available
+                    if (data.length === 0) {
+                        therapistsList.innerHTML = '<p>No therapists available at the moment.</p>';
+                        return;
+                    }
+    
+                    // Create and append therapist elements
+                    data.forEach(therapist => {
+                        const therapistDiv = document.createElement('div');
+                        therapistDiv.classList.add('therapist');
+                        therapistDiv.innerHTML = `
+                            <h2>${therapist.name}</h2>
+                            <p><strong>Specialty:</strong> ${therapist.specialty}</p>
+                            <p><strong>Availability:</strong> ${therapist.availability}</p>
+                        `;
+                        therapistsList.appendChild(therapistDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching therapists:', error);
+                    document.getElementById('therapists-list').innerHTML = '<p>Error loading therapists. Please try again later.</p>';
+                });
+        </script>
         <form action="/therapist/<%= therapist.id %>/update" method="POST" class="profile-form">
             <div class="form-group">
                 <label for="name">Name</label>

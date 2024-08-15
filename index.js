@@ -4,6 +4,13 @@ const { Pool } = require('pg');
 const bodyParser = require('body-parser'); 
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const mysql = require('mysql')
+const dbconn=mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'',
+    database:'otdbn1'
+})
 
 
 const app = express();
@@ -22,174 +29,115 @@ const pool = new Pool({
     port: 5432,
 });
 
+app.use(express.urlencoded({extended:true}))
+app.use(express.static(path.join(__dirname,"public")))
+app.use(session({
+    secret:'yourencryptionkey',
+    resave:false,
+    saveUninitialized:true,
+    Cookie: {secure:false}
+}))
 
+app.use((req,res,next)=>{
+    const privateRoutes=['/profile','/borrow','updateprofile']
+    const adminRoutes=['/newauthor','/approveuser','/completeorder']
+    
+    if(req.session && req.session.user){
+        res.locals.user=req.session.user
+        if(req.session.user.Email !=="johnmwanda@gmail.com" && adminRoutes.includes(req.path)){
+            res.status(401).send('unauthorized access.Only admins can access this route')
+        }else{
+            next ()
+        }
+    }else if(privateRoutes.includes(req.path)|| adminRoutes.includes(req.path)){
+        res.status(401).send('unauthorized access.Log in first')
+    }else{ next ()}
 
-app.set('view engine' , 'ejs' );
-
-app.use(express.static(path.join(__dirname, 'public')));
+   
+})
 
 app.get('/', (req, res) => {
     res.render('index');
 });
 
-
-const users = [
-    { id: 1, username: 'user1', passwordHash: bcrypt.hashSync('password1', 10) }
-];
-
-// Routes
-app.get('/', (req, res) => {
-    res.redirect('/signin');
-});
-
-app.get('/signin', (req, res) => {
-    res.render('signin');
-});
-
-app.post('/signin', (req, res) => {
-    const { username, password } = req.body;
-    const user = users.find(u => u.username === username);
-
-    if (user && bcrypt.compareSync(password, user.passwordHash)) {
-        req.session.userId = user.id;
-        return res.redirect('/dashboard');
-    }
-
-    res.render('signin', { error: 'Invalid username or password' });
-});
-
-app.get('/dashboard', (req, res) => {
-    if (!req.session.userId) {
-        return res.redirect('/signin');
-    }
-
-    res.render('dashboard', { user: users.find(u => u.id === req.session.userId) });
-});
-
-app.get('/logout', (req, res) => {
-    req.session.destroy(err => {
-        if (err) {
-            return res.redirect('/dashboard');
-        }
-
-        res.redirect('/signin');
-    });
-});
-
-app.get('/signup', (req, res) => {
+app.get('/signup',(req, res)=>{
     res.render('signup');
-});
-
-// Handle the sign-up form submission
-app.post('/signup', async (req, res) => {
-    const { username, password } = req.body;
-
-    try {
-        // Check if the username already exists
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-
-        if (result.rows.length > 0) {
-            // Username already exists
-            return res.render('signup', { error: 'Username already taken' });
-        }
-
-        // Hash the password
-        const passwordHash = bcrypt.hashSync(password, 10);
-
-        // Insert the new user into the database
-        await pool.query('INSERT INTO users (username, password_hash) VALUES ($1, $2)', [username, passwordHash]);
-
-        // Redirect to sign-in page or a success page
-        res.redirect('/signin');
-    } catch (error) {
-        console.error('Error during sign-up:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Serve the sign-in form
-app.get('/signin', (req, res) => {
+})
+app.post("/signup",(req,res)=>{
+    //get data from html form through req.body
+    //check if email provided is in the database(registered users)
+    //hash password
+    //insert into database
+   
+    dbconn.query(`SELECT Email FROM patients WHERE Email ="${req.body.email}"` , (err,result)=>{
+        if(err){
+            console.log(err);
+            res.status(500).send('Server Error')}
+            else{
+                if (result.length>0){
+                    //email found
+                    res.render('signup.ejs',{errorMessage:"Email already in use. SignUp"})
+                }else{
+                    //email not found
+                    const hashedPassword = bcrypt.hashSync(req.body.password,5);
+                    //now store the data
+                    
+                    dbconn.query(`INSERT INTO patients(name,email,PASSWORD)VALUES("${req.body.name}","${req.body.email}","${hashedPassword}",1)`,(error)=>{
+                        console.log(error);
+                        if (error){
+                            res.status(500).send('server error')
+                        } else{
+                            res.redirect('/signin')
+                        }
+                   })
+                 }
+                }
+            })
+        })    
+        
+app.get('/sigin',(req, res)=>{
     res.render('signin');
-});
+})
+app.post('/signin',(req,res)=>{
+    //get data from html form through req.body
+    //check if email provided is in the database(registered users)
+    //check if password matches the one in the database bcrypt.comparesync
+    //if all is good, redirect to home page/create a session.......what are sessions and why is http stateless ,what are cookies,in web ofc
+    res.sendFile(path.join(__dirname, 'public', 'signin.ejs'));
+    console.log(req.body);
+    dbconn.query(`SELECT * FROM patients WHERE Email ="${req.body.email}"`, (error,member)=>{
+        if(error){
+            console.log(error);
+            res.status(500).send('Server Error')
+        }else{
+            console.log(patient);
+            if (member.length==0){
+                res.render('signin.ejs',{errorMessage:"Email not registered. Sign Up"})
+            }else{
+                let passwordMatch=bcrypt.compareSync(req.body.password,patient[0].password)
+                console.log(passwordMatch);
+                if(passwordMatch){
+                    //initiate a session\
+                    req.session.user=patient[0];
+                    res.redirect('/')
+                }else{
+                    res.render('signin.ejs',{errorMessage:"Password incorrect."})
+                } }
 
-app.get('/therapists', (req, res) => {
-    // Fetch therapists from the database or perform any action you want
-    res.send('List of therapists');
-});
-
-
-app.get('/therapist/:id', async (req, res) => {
-    const therapistId = req.params.id;
-
-    try {
-        const result = await pool.query('SELECT * FROM therapists WHERE id = $1', [therapistId]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).send('Therapist not found');
         }
-
-        const therapist = result.rows[0];
-        res.render('therapist-profile', { therapist });
-    } catch (error) {
-        console.error('Error retrieving therapist profile:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Route to update a therapist's profile
-app.post('/therapist/:id/update', async (req, res) => {
-    const therapistId = req.params.id;
-    const { name, specialization, email, bio } = req.body;
-
-    try {
-        await pool.query(
-            'UPDATE therapists SET name = $1, specialization = $2, email = $3, bio = $4 WHERE id = $5',
-            [name, specialization, email, bio, therapistId]
-        );
-        res.redirect(`/therapist/${therapistId}`);
-    } catch (error) {
-        console.error('Error updating therapist profile:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Route to view a patient's profile
-app.get('/patient/:id', async (req, res) => {
-    const patientId = req.params.id;
-
-    try {
-        const result = await pool.query('SELECT * FROM patients WHERE id = $1', [patientId]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).send('Patient not found');
-        }
-
-        const patient = result.rows[0];
-        res.render('patient-profile', { patient });
-    } catch (error) {
-        console.error('Error retrieving patient profile:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Route to update a patient's profile
-app.post('/patient/:id/update', async (req, res) => {
-    const patientId = req.params.id;
-    const { name, date_of_birth, medical_history, email } = req.body;
-
-    try {
-        await pool.query(
-            'UPDATE patients SET name = $1, date_of_birth = $2, medical_history = $3, email = $4 WHERE id = $5',
-            [name, date_of_birth, medical_history, email, patientId]
-        );
-        res.redirect(`/patient/${patientId}`);
-    } catch (error) {
-        console.error('Error updating patient profile:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
+    })
 
 
+})
+app.get('/logout',(req,res)=>{
+    req.session.destroy(err=>{
+        if(err){
+            res.status(500).send('server error')}
+            else{ 
+                res.redirect('/')}
+    });
+   
+})
 
 
 
