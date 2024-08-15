@@ -38,6 +38,11 @@ app.use(session({
     Cookie: {secure:false}
 }))
 
+app.set('view engine', 'ejs');
+
+
+
+
 app.use((req,res,next)=>{
     const privateRoutes=['/profile','/borrow','updateprofile']
     const adminRoutes=['/newauthor','/approveuser','/completeorder']
@@ -61,13 +66,9 @@ app.get('/', (req, res) => {
 });
 
 app.get('/signup',(req, res)=>{
-    res.render('signup');
+    res.render('signup.ejs');
 })
 app.post("/signup",(req,res)=>{
-    //get data from html form through req.body
-    //check if email provided is in the database(registered users)
-    //hash password
-    //insert into database
    
     dbconn.query(`SELECT Email FROM patients WHERE Email ="${req.body.email}"` , (err,result)=>{
         if(err){
@@ -95,16 +96,11 @@ app.post("/signup",(req,res)=>{
             })
         })    
         
-app.get('/sigin',(req, res)=>{
-    res.render('signin');
+app.get('/signin',(req, res)=>{
+    res.render('signin.ejs');
 })
 app.post('/signin',(req,res)=>{
-    //get data from html form through req.body
-    //check if email provided is in the database(registered users)
-    //check if password matches the one in the database bcrypt.comparesync
-    //if all is good, redirect to home page/create a session.......what are sessions and why is http stateless ,what are cookies,in web ofc
-    res.sendFile(path.join(__dirname, 'public', 'signin.ejs'));
-    console.log(req.body);
+    
     dbconn.query(`SELECT * FROM patients WHERE Email ="${req.body.email}"`, (error,member)=>{
         if(error){
             console.log(error);
